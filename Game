@@ -5,14 +5,15 @@ name = ""
 
 
 # Stats
-strength = 0
-speed = 0
-defense = 0
-vitality = 0
+strength = 1
+speed = 1
+defense = 1
+vitality = 1
 level = 1
 statPoints = 0
 xp = 0
 coins = 0
+xpToNextLevel = 100
 
 
 def startUp():
@@ -80,32 +81,39 @@ def mainMenu():
 
 
 def fights():
-    global vitality, strength, speed, defense, name
+    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints
 
+    dodgeChance = 0
 
-    playerHp = 100 + vitality*10
+    if speed > 50:
+        dodgeChance = 50
+    else:
+        dodgeChance = speed
 
+    playerHp = 100 + vitality*5
+
+    armor = 0
 
     enemyHp = playerHp*1.5
 
+    maxEnemyHp = enemyHp
 
-    enemyStrengh = strength*0.5
+    enemyStrengh = strength*10
 
+    if defense*2 > enemyStrengh-15:
+        armor = enemyStrengh-15
+    else:
+        armor = defense*2
 
     enemySpeed = random.randint(speed-20, speed+5)
 
-
     win = False
-
-
-    Defeat = False
-
 
     action = ''
 
+    Eblocked = False
 
-    blocked = False
-
+    Eblocking = False
 
     blocking = False
 
@@ -113,22 +121,27 @@ def fights():
     while True:
 
 
-        print(f"\n\n------------------------------------------------------\n\nEnemy HP: {enemyHp}\n\n{name}'s HP: {playerHp}")
+        print(f"\n\nEnemy HP: {enemyHp}\n\n{name}'s HP: {playerHp}")
         
         if speed > enemySpeed:
 
 
-            action = input("\n\n 1. Golpear\n 2. Blockear\n 3. Escaparse")
+            action = input("\n\n 1. Golpear\n 2. Blockear\n 3. Escaparse\n\n\nElige una accion (1-3): ")
 
 
             if action == '1':
 
-
-                enemyHp -= 20*strength
+                if Eblocking:
+                    print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {(20*strength)/2} de daño.")
+                    enemyHp -= (20*strength)/2
+                else:
+                    print(f"\n\nGolpeas al enemigo! Haces {20*strength} de daño.")
+                    enemyHp -= 20*strength
 
 
             elif action == '2':
-
+                
+                print("\n\nBloqueas el proximo ataque del enemigo!")
 
                 blocking = True
 
@@ -141,8 +154,150 @@ def fights():
 
                 break
 
+            else:
+
+
+                print("\n\nError. Tu turno sera perdido.")
+
+            if enemyHp <= 0:
+
+                win = True
+
+                break
+
+            elif enemyHp < maxEnemyHp/2 and not Eblocked:
+
+                Eblocked = True
+
+                print("\n\nEnemigo bloquea tu proximo ataque!")
+
+                Eblocking = True
+
+            else:
+                Eblocked = False
+                if random.randint(1,100) <= dodgeChance:
+                    print("\n\nLogras esquivar el ataque del enemigo!")
+                else:
+                    if blocking:
+                        playerHp -= (enemyStrengh-armor)/2
+                        print(f"\n\nEl enemigo ataca! Pero, al bloquear, solo hace {(enemyStrengh-armor)/2} de daño.")
+                    else:
+                        playerHp -= enemyStrengh-defense
+                        print(f"\n\nEl enemigo ataca! Hace {enemyStrengh-armor} de daño.")
+
+                    if playerHp <= 0:
+                        break
+        else:
+            if enemyHp < maxEnemyHp/2 and not Eblocked:
+
+                Eblocked = True
+
+                print("\n\nEnemigo bloquea tu proximo ataque!")
+
+                Eblocking = True
+
+            else:
+                Eblocked = False
+                if random.randint(1,100) <= dodgeChance:
+                    print("\n\nLogras esquivar el ataque del enemigo!")
+                else:
+                    if blocking:
+                        playerHp -= (enemyStrengh-armor)/2
+                        print(f"\n\nEl enemigo ataca! Pero, al bloquear, solo hace {(enemyStrengh-armor)/2} de daño.")
+                    else:
+                        playerHp -= enemyStrengh-defense
+                        print(f"\n\nEl enemigo ataca! Hace {enemyStrengh-armor} de daño.")
+
+                    if playerHp <= 0:
+                        break
+
+            action = input("\n\n 1. Golpear\n 2. Blockear\n 3. Escaparse\n\n\nElige una accion (1-3): ")
+
+
+            if action == '1':
+
+                if Eblocking:
+                    print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {(20*strength)/2} de daño.")
+                    enemyHp -= (20*strength)/2
+                else:
+                    print(f"\n\nGolpeas al enemigo! Haces {20*strength} de daño.")
+                    enemyHp -= 20*strength
+
+
+            elif action == '2':
+                
+                print("\n\nBloqueas el proximo ataque del enemigo!")
+
+                blocking = True
+
+
+            elif action == '3':
+                break
+
+            else:
+
+
+                print("\n\nError. Tu turno sera perdido.")
+
+            if enemyHp <= 0:
+
+                win = True
+
+                break
+        blocking = False
+        Eblocking = False
+
+        print("\n\n------------------------------------------------------")
+
+    if win:
+        print(f"\n\nFelicidades! Has ganado la pelea! Has ganado {50+maxEnemyHp} de XP y {20+enemyStrengh} monedas!")
+        xp += 50+maxEnemyHp/2
+        coins += 20+enemyStrengh
+        if xp >= xpToNextLevel:
+            while xp >= xpToNextLevel:
+                level += 1
+                statPoints += 3
+                xp -= xpToNextLevel
+                xpToNextLevel = int(xpToNextLevel*1.35)
+                print(f"\n\nHas subido de nivel! Ahora eres nivel {level}! Tienes {statPoints} puntos de estadistica para gastar!")
+    else:
+        print("\n\nHas sido derrotado... Mejor suerte la proxima vez!")
+    
+    mainMenu()
+    return
+
 
             
+def stats ():
+    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints
+
+    print(f"\n\n{name}'s Stats\n\nNivel: {level}\nXP: {xp}/{xpToNextLevel}\nMonedas: {coins}\nVitalidad: {vitality}\nFuerza: {strength}\nVelocidad: {speed}\nDefensa: {defense}\nPuntos de estadistica sin gastar: {statPoints}")
+
+    Yn = input("\n\nQuieres gastar tus puntos de estadistica? (Y/N): ")
+
+    statChosen = 0
+    statAmount = 0
+
+    if Yn == 'Y':
+        statChose = input("\n\nQue estadistica quieres mejorar? (1. Vitalidad, 2. Fuerza, 3. Velocidad, 4. Defensa): ")
+        statAmount = int(input("\n\nCuantos puntos quieres gastar? "))
+        if statChose == '1':
+            vitality += statAmount
+            statPoints -= statAmount
+        elif statChose == '2':
+            strength += statAmount
+            statPoints -= statAmount
+        elif statChose == '3':
+            speed += statAmount
+            statPoints -= statAmount
+        elif statChose == '4':
+            defense += statAmount
+            statPoints -= statAmount
+        else:
+            print("\n\nError. No se ha gastado ningun punto de estadistica.")
+    
+    mainMenu()
+    return
 
 
 
