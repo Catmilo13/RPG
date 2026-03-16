@@ -1,5 +1,153 @@
-def main():
-    print("Hola!")
+import random
 
 
-main()
+name = ""
+
+
+# Stats
+strength = 0
+speed = 0
+defense = 0
+vitality = 0
+level = 1
+statPoints = 0
+xp = 0
+coins = 0
+
+
+def startUp():
+    global name
+
+
+    print("Bienvenido a RPG.")
+
+
+    name = input("\n\nPor favor ingresa tu nombre: ")
+    Yn = input(f"\n\nConfirmar el nombre {name}? No lo podras cambiar despues (Y/N): ")
+
+
+    if Yn == 'N':
+        while Yn == 'N':
+            name = input("\n\nPor favor ingresa tu nombre: ")
+            Yn = input(f"\n\nConfirmar el nombre {name}? No lo podras cambiar despues (Y/N): ")
+
+
+    elif Yn != 'Y':
+        while Yn != 'N' and Yn != 'Y':
+            Yn = input("\n\nError, respuesta no valida. Ingresa de nuevo: ")
+
+
+        if Yn == 'N':
+            while Yn == 'N':
+                name = input("\n\nPor favor ingresa tu nombre: ")
+                Yn = input(f"\n\nConfirmar el nombre {name}? No lo podras cambiar despues (Y/N): ")
+
+
+    mainMenu()
+
+
+def mainMenu():
+
+
+    print("\n------------------------------------------------------\n\nJuego RPG\n\n 1. Pelea\n 2. Estadisticas\n 3. Inventario\n 4. Tienda")
+
+
+    
+    while True:
+
+
+        opcion = input("\n\nElige una opcion (1-4): ")
+        if opcion == '1':
+            fights()
+            break
+        elif opcion == '2':
+            stats()
+            break
+        elif opcion == '3':
+            inventory()
+            break
+        elif opcion == '4':
+            store()
+            break
+        else:
+            print("\n\nError. Intenta de nuevo.")
+            
+
+
+    return
+
+
+
+
+def fights():
+    global vitality, strength, speed, defense, name
+
+
+    playerHp = 100 + vitality*10
+
+
+    enemyHp = playerHp*1.5
+
+
+    enemyStrengh = strength*0.5
+
+
+    enemySpeed = random.randint(speed-20, speed+5)
+
+
+    win = False
+
+
+    Defeat = False
+
+
+    action = ''
+
+
+    blocked = False
+
+
+    blocking = False
+
+
+    while True:
+
+
+        print(f"\n\n------------------------------------------------------\n\nEnemy HP: {enemyHp}\n\n{name}'s HP: {playerHp}")
+        
+        if speed > enemySpeed:
+
+
+            action = input("\n\n 1. Golpear\n 2. Blockear\n 3. Escaparse")
+
+
+            if action == '1':
+
+
+                enemyHp -= 20*strength
+
+
+            elif action == '2':
+
+
+                blocking = True
+
+
+            elif action == '3':
+
+
+                defeat = True
+
+
+                break
+
+
+            
+
+
+
+
+
+
+startUp()
+
