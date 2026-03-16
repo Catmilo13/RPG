@@ -1,5 +1,5 @@
 def main():
-    print("Welcome to the game!")
+    print("Hola!")
 
 
 main()
