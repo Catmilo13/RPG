@@ -29,7 +29,8 @@ def startUp():
 
 
     name = input("\n\nPor favor ingresa tu nombre: ")
-    Yn = input(f"\n\nConfirmar el nombre {name}? No lo podras cambiar despues (Y/N): ")
+    Yn = input(f"\n\nConfirmar el nombre {name}? No lo podras cambiar despues (Y/N): ").upper()
+
 
 
     if Yn == 'N':
@@ -38,8 +39,8 @@ def startUp():
             Yn = input(f"\n\nConfirmar el nombre {name}? No lo podras cambiar despues (Y/N): ")
 
 
-    elif Yn != 'Y':
-        while Yn != 'N' and Yn != 'Y':
+    elif Yn.upper() != 'Y':
+        while Yn != 'N' and Yn.upper() != 'Y':
             Yn = input("\n\nError, respuesta no valida. Ingresa de nuevo: ")
 
 
@@ -64,6 +65,7 @@ def mainMenu():
 
         opcion = input("\n\nElige una opcion (1-4): ")
         if opcion == '1':
+            print("\n\n------------------------------------------------------")
             fights()
             break
         elif opcion == '2':
@@ -135,6 +137,8 @@ def fights():
     elif equipedArmor == 3:
         if armor*1.5 < enemyStrengh-15:
             armor = armor*1.5
+        else:
+            armor = enemyStrengh-15
         dodgeChance += 20
 
     if equipedWeapon == 1:
@@ -144,10 +148,17 @@ def fights():
     
     randomizador = random.randint(1, 100)
 
+    enemyDodge = 0
+
+    if enemySpeed > 50:
+        enemyDodge = 50
+    else:
+        enemyDodge = enemySpeed
+
     while True:
 
 
-        print(f"\n\nEnemy HP: {enemyHp}\n\n{name}'s HP: {playerHp}")
+        print(f"\n\nHP del enemigo: {enemyHp}\n\nHP de {name}: {playerHp}")
         
         if speed > enemySpeed:
 
@@ -156,13 +167,16 @@ def fights():
 
 
             if action == '1':
-
-                if Eblocking:
-                    print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {damage/2} de daño.")
-                    enemyHp -= damage/2
+                
+                if random.randint(1, 100) <= enemyDodge:
+                    print("\n\nEl enemigo esquivo tu ataque!")
                 else:
-                    print(f"\n\nGolpeas al enemigo! Haces {damage} de daño.")
-                    enemyHp -= damage
+                    if Eblocking:
+                        print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {damage/2} de daño.")
+                        enemyHp -= damage/2
+                    else:
+                        print(f"\n\nGolpeas al enemigo! Haces {damage} de daño.")
+                        enemyHp -= damage
 
 
             elif action == '2':
@@ -242,12 +256,15 @@ def fights():
 
             if action == '1':
 
-                if Eblocking:
-                    print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {damage/2} de daño.")
-                    enemyHp -= damage/2
+                if random.randint(1, 100) <= enemyDodge:
+                    print("\n\nEl enemigo esquivo tu ataque!")
                 else:
-                    print(f"\n\nGolpeas al enemigo! Haces {damage} de daño.")
-                    enemyHp -= damage
+                    if Eblocking:
+                        print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {damage/2} de daño.")
+                        enemyHp -= damage/2
+                    else:
+                        print(f"\n\nGolpeas al enemigo! Haces {damage} de daño.")
+                        enemyHp -= damage
 
 
             elif action == '2':
@@ -326,9 +343,11 @@ def fights():
 def stats ():
     global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints
 
+    print("\n\n------------------------------------------------------")
+
     print(f"\n\n{name}'s Stats\n\nNivel: {level}\nXP: {xp}/{xpToNextLevel}\nMonedas: {coins}\nVitalidad: {vitality}\nFuerza: {strength}\nVelocidad: {speed}\nDefensa: {defense}\nPuntos de estadistica sin gastar: {statPoints}")
 
-    Yn = input("\n\nQuieres gastar tus puntos de estadistica? (Y/N): ")
+    Yn = input("\n\nQuieres gastar tus puntos de estadistica? (Y/N): ").upper()
 
     statChosen = 0
     statAmount = 0
@@ -362,10 +381,11 @@ def stats ():
             if statPoints <= 0:
                 break
 
-            continuar = input("\n\nQuieres mejorar otra estadistica? (Y/N): ")
+            continuar = input(f"\n\nQuieres mejorar otra estadistica? Tienes {statPoints} puntos para gastar restantes (Y/N): ").upper()
             if continuar != 'Y':
                 break
-    
+    elif Yn == 'Y' and statPoints == 0:
+        print("No tienes ningun punto para gastar")
     mainMenu()
     return
 
@@ -386,13 +406,15 @@ def inventory():
     print("\nArmadura equipada: ")
 
     if equipedArmor == 0:
-        print("Sin armadura")
+        print("Sin armadura\n")
     elif equipedArmor == 1:
-        print("Armadura ligera")
+        print("Armadura ligera\n")
     elif equipedArmor == 2:
-        print("Botas de velocidad")
+        print("Botas de velocidad\n")
     elif equipedArmor == 3:
-        print("Armadura del heroe")
+        print("Armadura del heroe\n")
+
+    print("\nItems en tu inventario: ")
 
     if ItemsOwned[0]:
         print("Espada normal")
@@ -404,38 +426,41 @@ def inventory():
         print("Espada del heroe")
     if ItemsOwned[4]:
         print("Armadura del heroe")
+    if all(x == 0  for x in ItemsOwned):
+        print("No tienes ningun item.")
 
-    Yn = input("\n\nQuieres equipar o desequipar algun item? (Y/N): ")
-    if Yn == 'Y':
-        EqOrDeq = input("\n\nQuieres equipar o desequipar? (1. Equipar, 2. Desequipar): ")
-        if EqOrDeq == '1':
-            item = input("\n\nQue item quieres equipar? (1. Espada normal, 2. Armadura ligera, 3. Botas de velocidad, 4. Espada del heroe, 5. Armadura del heroe): ")
-            if item == '1' and ItemsOwned[0]:
-                equipedWeapon = 1
-            elif item == '2' and ItemsOwned[1]:
-                equipedArmor = 1
-            elif item == '3' and ItemsOwned[2]:
-                equipedArmor = 2
-            elif item == '4' and ItemsOwned[3]:
-                equipedWeapon = 2
-            elif item == '5' and ItemsOwned[4]:
-                equipedArmor = 3
-            else:
-                print("\n\nError. No tienes ese item o respuesta invalida.")
-        elif EqOrDeq == '2':
-            item = input("\n\nQue item quieres desequipar? (1. Espada normal, 2. Armadura ligera, 3. Botas de velocidad, 4. Espada del heroe, 5. Armadura del heroe): ")
-            if item == '1' and equipedWeapon == 1:
-                equipedWeapon = 0
-            elif item == '2' and equipedArmor == 1:
-                equipedArmor = 0
-            elif item == '3' and equipedArmor == 2:
-                equipedArmor = 0
-            elif item == '4' and equipedWeapon == 2:
-                equipedWeapon = 0
-            elif item == '5' and equipedArmor == 3:
-                equipedArmor = 0
-            else:
-                print("\n\nError. No tienes ese item equipado o respuesta invalida.")
+    if not all(x == 0  for x in ItemsOwned):
+        Yn = input("\n\nQuieres equipar o desequipar algun item? (Y/N): ").upper()
+        if Yn == 'Y':
+            EqOrDeq = input("\n\nQuieres equipar o desequipar? (1. Equipar, 2. Desequipar): ")
+            if EqOrDeq == '1':
+                item = input("\n\nQue item quieres equipar? (1. Espada normal, 2. Armadura ligera, 3. Botas de velocidad, 4. Espada del heroe, 5. Armadura del heroe): ")
+                if item == '1' and ItemsOwned[0]:
+                    equipedWeapon = 1
+                elif item == '2' and ItemsOwned[1]:
+                    equipedArmor = 1
+                elif item == '3' and ItemsOwned[2]:
+                    equipedArmor = 2
+                elif item == '4' and ItemsOwned[3]:
+                    equipedWeapon = 2
+                elif item == '5' and ItemsOwned[4]:
+                    equipedArmor = 3
+                else:
+                    print("\n\nError. No tienes ese item o respuesta invalida.")
+            elif EqOrDeq == '2':
+                item = input("\n\nQue item quieres desequipar? (1. Espada normal, 2. Armadura ligera, 3. Botas de velocidad, 4. Espada del heroe, 5. Armadura del heroe): ")
+                if item == '1' and equipedWeapon == 1:
+                    equipedWeapon = 0
+                elif item == '2' and equipedArmor == 1:
+                    equipedArmor = 0
+                elif item == '3' and equipedArmor == 2:
+                    equipedArmor = 0
+                elif item == '4' and equipedWeapon == 2:
+                    equipedWeapon = 0
+                elif item == '5' and equipedArmor == 3:
+                    equipedArmor = 0
+                else:
+                    print("\n\nError. No tienes ese item equipado o respuesta invalida.")
     
     mainMenu()
     return
@@ -588,4 +613,3 @@ def store():
 
 
 startUp()
-
