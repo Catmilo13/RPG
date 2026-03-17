@@ -28,7 +28,7 @@ equipedWeapon = 0
 shopSlots = [0]*3
 savedShopSlot = -1
 savedShopItem = 0    
-statuses = [0]*3    # Stun, bleed and confusion, in that order.
+statuses = [0]*4    # Stun, bleed, confusion, lifesteal (on enemy)
 defeatStreak = 0
 winStreak = 0
 
@@ -105,6 +105,8 @@ def fights():
 
     clear_console()
 
+    statuses = [0]*4
+
     dodgeChance = 0
 
     if speed > 50:
@@ -113,6 +115,7 @@ def fights():
         dodgeChance = speed
 
     playerHp = 100 + vitality*5
+    maxPlayerHp = playerHp
 
     maxArmor = False
 
@@ -174,11 +177,19 @@ def fights():
 
     while True:
 
+        enemy_skip_turn = False
+
         clear_console()
         print(f"\n\nHP del enemigo: {enemyHp}\n\nHP de {name}: {playerHp}")
 
+        lifesteal_active = False
+        if statuses[3] > 0:
+            lifesteal_active = True
+            print(f"\n\nEl enemigo tiene lifesteal activo! Tus ataques te curan la mitad del daño. Le quedan {statuses[3]} turnos.")
+            statuses[3] -= 1
+
         if statuses[1] > 0:
-            bleedDamage = int(enemyHp*0.05)
+            bleedDamage = int(maxEnemyHp*0.1)
             enemyHp -= bleedDamage
             print(f"\n\nEl enemigo sufre de sangrado! Pierde {bleedDamage} HP. Le quedan {statuses[1]} turnos de sangrado.")
             if enemyHp <= 0:
@@ -193,16 +204,16 @@ def fights():
                     win = True
                     break
                 statuses[2] -= 1
+                enemy_skip_turn = True
                 input("\n\nPresiona Enter para continuar...")
-                continue
             else:
                 print("\n\nEl enemigo esta confundido, pero logra atacar de todas formas!")
                 statuses[2] -= 1
         if statuses[0] > 0:
             print(f"\n\nEl enemigo esta aturdido! Pierde su turno. Le quedan {statuses[0]} turnos de aturdimiento.")
             statuses[0] -= 1
+            enemy_skip_turn = True
             input("\n\nPresiona Enter para continuar...")
-            continue
 
         
         if speed > enemySpeed:
@@ -222,21 +233,29 @@ def fights():
                         if crit:
                             print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño (critico).")
                             if random.randint(1, 5) == 1:
-                                statuses[random.randint(0,2)] += 3
+                                statuses[random.randint(0,3)] += 3
                                 print(f"\n\nEl enemigo es afectado por un efecto negativo!")
                         else:
                             print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño.")
                         enemyHp -= final_damage
+                        if statuses[3] > 0 and final_damage > 0:
+                            heal = int(final_damage/2)
+                            playerHp = min(playerHp + heal, maxPlayerHp)
+                            print(f"\n\nTe curas {heal} de vida gracias a lifesteal.")
                     else:
                         final_damage = damage * (2 if crit else 1)
                         if crit:
                             print(f"\n\nGolpeas al enemigo! Critico — haces {final_damage} de daño.")
                             if random.randint(1, 5) == 1:
-                                statuses[random.randint(0,2)] += 3
+                                statuses[random.randint(0,3)] += 3
                                 print(f"\n\nEl enemigo es afectado por un efecto negativo!")
                         else:
                             print(f"\n\nGolpeas al enemigo! Haces {final_damage} de daño.")
                         enemyHp -= final_damage
+                        if statuses[3] > 0 and final_damage > 0:
+                            heal = int(final_damage/2)
+                            playerHp = min(playerHp + heal, maxPlayerHp)
+                            print(f"\n\nTe curas {heal} de vida gracias a lifesteal.")
 
 
             elif action == '2':
@@ -276,18 +295,19 @@ def fights():
 
             else:
                 Eblocked = False
-                if random.randint(1,100) <= dodgeChance:
-                    print("\n\nLogras esquivar el ataque del enemigo!")
-                else:
-                    if blocking:
-                        playerHp -= (enemyStrengh-armor)/2
-                        print(f"\n\nEl enemigo ataca! Pero, al bloquear, solo hace {(enemyStrengh-armor)/2} de daño.")
+                if not enemy_skip_turn:
+                    if random.randint(1,100) <= dodgeChance:
+                        print("\n\nLogras esquivar el ataque del enemigo!")
                     else:
-                        playerHp -= enemyStrengh-defense
-                        print(f"\n\nEl enemigo ataca! Hace {enemyStrengh-armor} de daño.")
+                        if blocking:
+                            playerHp -= (enemyStrengh-armor)/2
+                            print(f"\n\nEl enemigo ataca! Pero, al bloquear, solo hace {(enemyStrengh-armor)/2} de daño.")
+                        else:
+                            playerHp -= enemyStrengh-defense
+                            print(f"\n\nEl enemigo ataca! Hace {enemyStrengh-armor} de daño.")
 
-                    if playerHp <= 0:
-                        break
+                        if playerHp <= 0:
+                            break
         else:
             if enemyHp < maxEnemyHp/2 and not Eblocked:
 
@@ -299,18 +319,19 @@ def fights():
 
             else:
                 Eblocked = False
-                if random.randint(1,100) <= dodgeChance:
-                    print("\n\nLogras esquivar el ataque del enemigo!")
-                else:
-                    if blocking:
-                        playerHp -= (enemyStrengh-armor)/2
-                        print(f"\n\nEl enemigo ataca! Pero, al bloquear, solo hace {(enemyStrengh-armor)/2} de daño.")
+                if not enemy_skip_turn:
+                    if random.randint(1,100) <= dodgeChance:
+                        print("\n\nLogras esquivar el ataque del enemigo!")
                     else:
-                        playerHp -= enemyStrengh-defense
-                        print(f"\n\nEl enemigo ataca! Hace {enemyStrengh-armor} de daño.")
+                        if blocking:
+                            playerHp -= (enemyStrengh-armor)/2
+                            print(f"\n\nEl enemigo ataca! Pero, al bloquear, solo hace {(enemyStrengh-armor)/2} de daño.")
+                        else:
+                            playerHp -= enemyStrengh-defense
+                            print(f"\n\nEl enemigo ataca! Hace {enemyStrengh-armor} de daño.")
 
-                    if playerHp <= 0:
-                        break
+                        if playerHp <= 0:
+                            break
 
             action = input("\n\n 1. Golpear\n 2. Blockear\n 3. Escaparse\n\n\nElige una accion (1-3): ")
 
@@ -326,21 +347,29 @@ def fights():
                         if crit:
                             print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño (critico).")
                             if random.randint(1, 5) == 1:
-                                statuses[random.randint(0,2)] += 3
+                                statuses[random.randint(0,3)] += 3
                                 print(f"\n\nEl enemigo es afectado por un efecto negativo!")
                         else:
                             print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño.")
                         enemyHp -= final_damage
+                        if statuses[3] > 0 and final_damage > 0:
+                            heal = int(final_damage/2)
+                            playerHp = min(playerHp + heal, maxPlayerHp)
+                            print(f"\n\nTe curas {heal} de vida gracias a lifesteal.")
                     else:
                         final_damage = damage * (2 if crit else 1)
                         if crit:
                             print(f"\n\nGolpeas al enemigo! Critico — haces {final_damage} de daño.")
                             if random.randint(1, 5) == 1:
-                                statuses[random.randint(0,2)] += 3
+                                statuses[random.randint(0,3)] += 3
                                 print(f"\n\nEl enemigo es afectado por un efecto negativo!")
                         else:
                             print(f"\n\nGolpeas al enemigo! Haces {final_damage} de daño.")
                         enemyHp -= final_damage
+                        if statuses[3] > 0 and final_damage > 0:
+                            heal = int(final_damage/2)
+                            playerHp = min(playerHp + heal, maxPlayerHp)
+                            print(f"\n\nTe curas {heal} de vida gracias a lifesteal.")
 
 
             elif action == '2':
@@ -444,6 +473,7 @@ def fights():
                         print("\n\nHas perdido todos tus puntos de estadistica.")
     
     input("\n\nPresiona Enter para continuar...")
+    statuses = [0]*4
     mainMenu()
     return
 
