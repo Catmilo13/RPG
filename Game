@@ -118,18 +118,18 @@ def fights():
 
     armor = 0
 
-    enemyHp = playerHp*1.5+winStreak*25-defeatStreak*10 + random.randint(-10, 10)
+    enemyHp = playerHp*1.25+winStreak*15-defeatStreak*10 + random.randint(int(-playerHp*0.1), int(playerHp*0.1))
 
     maxEnemyHp = enemyHp
 
-    enemyStrengh = strength*5+10+winStreak*10-defeatStreak*5 + random.randint(-10, 5)
+    enemyStrengh = strength*4+10+winStreak*8-defeatStreak*5 + random.randint(-10, 5)
 
     if defense*2 > enemyStrengh-15:
         armor = enemyStrengh-15
         maxArmor = True
     else:
         armor = defense*2
-
+        
     enemySpeed = random.randint(speed-20, speed+5)
 
     damage = 5*strength+15
@@ -143,6 +143,8 @@ def fights():
     Eblocking = False
 
     blocking = False
+
+    escaped = False
 
     if equipedArmor == 1:
         if armor*1.25 < enemyStrengh-15:
@@ -165,8 +167,8 @@ def fights():
 
     enemyDodge = 0
 
-    if enemySpeed > 50:
-        enemyDodge = 50
+    if enemySpeed > 40:
+        enemyDodge = 40
     else:
         enemyDodge = enemySpeed
 
@@ -246,6 +248,7 @@ def fights():
 
             elif action == '3':
 
+                escaped = True
 
                 defeat = True
 
@@ -348,6 +351,11 @@ def fights():
 
 
             elif action == '3':
+
+                escaped = True
+
+                defeat = True
+
                 break
 
             else:
@@ -414,16 +422,26 @@ def fights():
         winStreak = 0
         defeatStreak += 1
         print("\n\nHas sido derrotado... Mejor suerte la proxima vez!")
-        if coins >= 10+enemyHp/2:
-            coins -= 10+enemyHp/2
-            print(f"\n\nHas perdido {10+enemyHp/2} monedas.")
-            if random.randint(1,100) <= 10:
+        if escaped:
+            print("\n\nHas escapado de la pelea, pero no ganas nada por ello.")
+            if random.randint(1,10) == 1:
                 if statPoints >= 2:
                     statPoints -= 2
-                    print("\n\nHas perdido 2 puntos de estadistica.")
+                    print("\n\nHas perdido 2 puntos de estadistica por escapar.")
                 elif statPoints > 0:
                     statPoints = 0
-                    print("\n\nHas perdido todos tus puntos de estadistica.")
+                    print("\n\nHas perdido todos tus puntos de estadistica por escapar.")
+        else:
+            if coins >= 10+enemyHp/2:
+                coins -= 10+enemyHp/2
+                print(f"\n\nHas perdido {10+enemyHp/10} monedas.")
+                if random.randint(1,10) == 1:
+                    if statPoints >= 2:
+                        statPoints -= 2
+                        print("\n\nHas perdido 2 puntos de estadistica.")
+                    elif statPoints > 0:
+                        statPoints = 0
+                        print("\n\nHas perdido todos tus puntos de estadistica.")
     
     input("\n\nPresiona Enter para continuar...")
     mainMenu()
@@ -559,7 +577,10 @@ def inventory():
                     equipedArmor = 0
                 else:
                     print("\n\nError. No tienes ese item equipado o respuesta invalida.")
-    
+    else:
+        print("\n\nNo tienes ningun item para equipar o desequipar.")
+        input("\n\nPresiona Enter para continuar...")
+
     mainMenu()
     return
 
@@ -623,22 +644,37 @@ def store():
             ItemsOwned[0] = True
             coins -= 150
             print("\n\nHas comprado la espada normal!")
+            if savedShopSlot == 0:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[0] == 2 and coins >= 150 and not ItemsOwned[1]:
             ItemsOwned[1] = True
             coins -= 150
             print("\n\nHas comprado la armadura ligera!")
+            if savedShopSlot == 0:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[0] == 3 and coins >= 400 and not ItemsOwned[2]:
             ItemsOwned[2] = True
             coins -= 400
             print("\n\nHas comprado las botas de velocidad!")
+            if savedShopSlot == 0:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[0] == 4 and coins >= 2000 and not ItemsOwned[3]:
             ItemsOwned[3] = True
             coins -= 2000
             print("\n\nHas comprado la espada del heroe!")
+            if savedShopSlot == 0:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[0] == 5 and coins >= 2000 and not ItemsOwned[4]:
             ItemsOwned[4] = True
             coins -= 2000
             print("\n\nHas comprado la armadura del heroe!")
+            if savedShopSlot == 0:
+                savedShopSlot = -1
+                savedShopItem = 0
         else:
             print("\n\nNo tienes suficientes monedas para comprar ese item o respuesta invalida.")
     elif opcion == 2:
@@ -646,22 +682,37 @@ def store():
             ItemsOwned[0] = True
             coins -= 150
             print("\n\nHas comprado la espada normal!")
+            if savedShopSlot == 1:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[1] == 2 and coins >= 150 and not ItemsOwned[1]:
             ItemsOwned[1] = True
             coins -= 150
             print("\n\nHas comprado la armadura ligera!")
+            if savedShopSlot == 1:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[1] == 3 and coins >= 400 and not ItemsOwned[2]:
             ItemsOwned[2] = True
             coins -= 400
             print("\n\nHas comprado las botas de velocidad!")
+            if savedShopSlot == 1:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[1] == 4 and coins >= 2000 and not ItemsOwned[3]:
             ItemsOwned[3] = True
             coins -= 2000
             print("\n\nHas comprado la espada del heroe!")
+            if savedShopSlot == 1:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[1] == 5 and coins >= 2000 and not ItemsOwned[4]:
             ItemsOwned[4] = True
             coins -= 2000
             print("\n\nHas comprado la armadura del heroe!")
+            if savedShopSlot == 1:
+                savedShopSlot = -1
+                savedShopItem = 0
         else:
             print("\n\nNo tienes suficientes monedas para comprar ese item o respuesta invalida.")
     elif opcion == 3:
@@ -669,22 +720,37 @@ def store():
             ItemsOwned[0] = True
             coins -= 150
             print("\n\nHas comprado la espada normal!")
+            if savedShopSlot == 2:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[2] == 2 and coins >= 150 and not ItemsOwned[1]:
             ItemsOwned[1] = True
             coins -= 150
             print("\n\nHas comprado la armadura ligera!")
+            if savedShopSlot == 2:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[2] == 3 and coins >= 400 and not ItemsOwned[2]:
             ItemsOwned[2] = True
             coins -= 400
             print("\n\nHas comprado las botas de velocidad!")
+            if savedShopSlot == 2:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[2] == 4 and coins >= 2000 and not ItemsOwned[3]:
             ItemsOwned[3] = True
             coins -= 2000
             print("\n\nHas comprado la espada del heroe!")
+            if savedShopSlot == 2:
+                savedShopSlot = -1
+                savedShopItem = 0
         elif shopSlots[2] == 5 and coins >= 2000 and not ItemsOwned[4]:
             ItemsOwned[4] = True
             coins -= 2000
             print("\n\nHas comprado la armadura del heroe!")
+            if savedShopSlot == 2:
+                savedShopSlot = -1
+                savedShopItem = 0
         else:
             print("\n\nNo tienes suficientes monedas para comprar ese item o respuesta invalida.")
     elif opcion == 4:
