@@ -14,7 +14,12 @@ statPoints = 0
 xp = 0
 coins = 0
 xpToNextLevel = 100
-
+ItemsOwned = [False]*5 
+equipedArmor = 0       
+equipedWeapon = 0      
+shopSlots = [0]*3
+savedShopSlot = -1   # ranura de tienda "guardada" que no se cambia al subir de nivel
+savedShopItem = 0    # ID del item guardado
 
 def startUp():
     global name
@@ -81,7 +86,7 @@ def mainMenu():
 
 
 def fights():
-    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints
+    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, equipedArmor, equipedWeapon, shopSlots, savedShopSlot
 
     dodgeChance = 0
 
@@ -91,6 +96,8 @@ def fights():
         dodgeChance = speed
 
     playerHp = 100 + vitality*5
+
+    maxArmor = False
 
     armor = 0
 
@@ -102,10 +109,13 @@ def fights():
 
     if defense*2 > enemyStrengh-15:
         armor = enemyStrengh-15
+        maxArmor = True
     else:
         armor = defense*2
 
     enemySpeed = random.randint(speed-20, speed+5)
+
+    damage = 20*strength
 
     win = False
 
@@ -117,6 +127,22 @@ def fights():
 
     blocking = False
 
+    if equipedArmor == 1:
+        if armor*1.25 < enemyStrengh-15:
+            armor = armor*1.25
+    elif equipedArmor == 2:
+        dodgeChance += 10
+    elif equipedArmor == 3:
+        if armor*1.5 < enemyStrengh-15:
+            armor = armor*1.5
+        dodgeChance += 20
+
+    if equipedWeapon == 1:
+        damage = damage*1.45
+    elif equipedWeapon == 2:
+        damage = damage*2
+    
+    randomizador = random.randint(1, 100)
 
     while True:
 
@@ -132,11 +158,11 @@ def fights():
             if action == '1':
 
                 if Eblocking:
-                    print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {(20*strength)/2} de daño.")
-                    enemyHp -= (20*strength)/2
+                    print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {damage/2} de daño.")
+                    enemyHp -= damage/2
                 else:
-                    print(f"\n\nGolpeas al enemigo! Haces {20*strength} de daño.")
-                    enemyHp -= 20*strength
+                    print(f"\n\nGolpeas al enemigo! Haces {damage} de daño.")
+                    enemyHp -= damage
 
 
             elif action == '2':
@@ -217,11 +243,11 @@ def fights():
             if action == '1':
 
                 if Eblocking:
-                    print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {(20*strength)/2} de daño.")
-                    enemyHp -= (20*strength)/2
+                    print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {damage/2} de daño.")
+                    enemyHp -= damage/2
                 else:
-                    print(f"\n\nGolpeas al enemigo! Haces {20*strength} de daño.")
-                    enemyHp -= 20*strength
+                    print(f"\n\nGolpeas al enemigo! Haces {damage} de daño.")
+                    enemyHp -= damage
 
 
             elif action == '2':
@@ -254,12 +280,41 @@ def fights():
         xp += 50+maxEnemyHp/2
         coins += 20+enemyStrengh
         if xp >= xpToNextLevel:
+            
+            # Si el jugador guardó una ranura, no la sobreescribimos al subir de nivel.
+            if savedShopSlot != 0:
+                if randomizador <= 60:
+                    shopSlots[0] = random.randint(1, 2)
+                elif randomizador <= 90:
+                    shopSlots[0] = 3
+                else:
+                    shopSlots[0] = random.randint(4, 5)
+
+            randomizador = random.randint(1, 100)
+            if savedShopSlot != 1:
+                if randomizador <= 60:
+                    shopSlots[1] = random.randint(1, 2)
+                elif randomizador <= 90:
+                    shopSlots[1] = 3
+                else:
+                    shopSlots[1] = random.randint(4, 5)
+
+            randomizador = random.randint(1, 100)
+            if savedShopSlot != 2:
+                if randomizador <= 60:
+                    shopSlots[2] = random.randint(1, 2)
+                elif randomizador <= 90:
+                    shopSlots[2] = 3
+                else:
+                    shopSlots[2] = random.randint(4, 5)
             while xp >= xpToNextLevel:
                 level += 1
                 statPoints += 3
                 xp -= xpToNextLevel
                 xpToNextLevel = int(xpToNextLevel*1.35)
                 print(f"\n\nHas subido de nivel! Ahora eres nivel {level}! Tienes {statPoints} puntos de estadistica para gastar!")
+            if level >= 5:
+                print("\nHan cambiado los items en la tienda! Revisa la tienda para ver los nuevos items disponibles!")
     else:
         print("\n\nHas sido derrotado... Mejor suerte la proxima vez!")
     
@@ -278,27 +333,255 @@ def stats ():
     statChosen = 0
     statAmount = 0
 
-    if Yn == 'Y':
-        statChose = input("\n\nQue estadistica quieres mejorar? (1. Vitalidad, 2. Fuerza, 3. Velocidad, 4. Defensa): ")
-        statAmount = int(input("\n\nCuantos puntos quieres gastar? "))
-        if statChose == '1':
-            vitality += statAmount
-            statPoints -= statAmount
-        elif statChose == '2':
-            strength += statAmount
-            statPoints -= statAmount
-        elif statChose == '3':
-            speed += statAmount
-            statPoints -= statAmount
-        elif statChose == '4':
-            defense += statAmount
-            statPoints -= statAmount
-        else:
-            print("\n\nError. No se ha gastado ningun punto de estadistica.")
+    if Yn == 'Y' and statPoints > 0:
+        while statPoints > 0:
+            statChose = input("\n\nQue estadistica quieres mejorar? (1. Vitalidad, 2. Fuerza, 3. Velocidad, 4. Defensa): ")
+            try:
+                statAmount = int(input("\n\nCuantos puntos quieres gastar? "))
+            except ValueError:
+                statAmount = 0
+
+            if statAmount > statPoints or statAmount <= 0:
+                print("\n\nError. Cantidad invalida.")
+            else:
+                if statChose == '1':
+                    vitality += statAmount
+                    statPoints -= statAmount
+                elif statChose == '2':
+                    strength += statAmount
+                    statPoints -= statAmount
+                elif statChose == '3':
+                    speed += statAmount
+                    statPoints -= statAmount
+                elif statChose == '4':
+                    defense += statAmount
+                    statPoints -= statAmount
+                else:
+                    print("\n\nError. No se ha gastado ningun punto de estadistica.")
+
+            if statPoints <= 0:
+                break
+
+            continuar = input("\n\nQuieres mejorar otra estadistica? (Y/N): ")
+            if continuar != 'Y':
+                break
     
     mainMenu()
     return
 
+def inventory():
+    global ItemsOwned, equipedArmor, equipedWeapon
+
+    print("\n------------------------------------------------------\n\nInventario\n")
+
+    print("\nArma equipada: ")
+
+    if equipedWeapon == 0:
+        print("Sin arma")
+    elif equipedWeapon == 1:
+        print("Espada normal")
+    elif equipedWeapon == 2:
+        print("Espada del heroe")
+
+    print("\nArmadura equipada: ")
+
+    if equipedArmor == 0:
+        print("Sin armadura")
+    elif equipedArmor == 1:
+        print("Armadura ligera")
+    elif equipedArmor == 2:
+        print("Botas de velocidad")
+    elif equipedArmor == 3:
+        print("Armadura del heroe")
+
+    if ItemsOwned[0]:
+        print("Espada normal")
+    if ItemsOwned[1]:
+        print("Armadura ligera")
+    if ItemsOwned[2]:
+        print("Botas de velocidad")
+    if ItemsOwned[3]:
+        print("Espada del heroe")
+    if ItemsOwned[4]:
+        print("Armadura del heroe")
+
+    Yn = input("\n\nQuieres equipar o desequipar algun item? (Y/N): ")
+    if Yn == 'Y':
+        EqOrDeq = input("\n\nQuieres equipar o desequipar? (1. Equipar, 2. Desequipar): ")
+        if EqOrDeq == '1':
+            item = input("\n\nQue item quieres equipar? (1. Espada normal, 2. Armadura ligera, 3. Botas de velocidad, 4. Espada del heroe, 5. Armadura del heroe): ")
+            if item == '1' and ItemsOwned[0]:
+                equipedWeapon = 1
+            elif item == '2' and ItemsOwned[1]:
+                equipedArmor = 1
+            elif item == '3' and ItemsOwned[2]:
+                equipedArmor = 2
+            elif item == '4' and ItemsOwned[3]:
+                equipedWeapon = 2
+            elif item == '5' and ItemsOwned[4]:
+                equipedArmor = 3
+            else:
+                print("\n\nError. No tienes ese item o respuesta invalida.")
+        elif EqOrDeq == '2':
+            item = input("\n\nQue item quieres desequipar? (1. Espada normal, 2. Armadura ligera, 3. Botas de velocidad, 4. Espada del heroe, 5. Armadura del heroe): ")
+            if item == '1' and equipedWeapon == 1:
+                equipedWeapon = 0
+            elif item == '2' and equipedArmor == 1:
+                equipedArmor = 0
+            elif item == '3' and equipedArmor == 2:
+                equipedArmor = 0
+            elif item == '4' and equipedWeapon == 2:
+                equipedWeapon = 0
+            elif item == '5' and equipedArmor == 3:
+                equipedArmor = 0
+            else:
+                print("\n\nError. No tienes ese item equipado o respuesta invalida.")
+    
+    mainMenu()
+    return
+
+def store():
+    global coins, ItemsOwned, shopSlots, level, savedShopSlot, savedShopItem
+
+    print("\n------------------------------------------------------\n\nTienda\n")
+
+    if level < 5:
+        print("\n\nSube a nivel 5 para usar la tienda!")
+        mainMenu()
+        return
+
+    print(f"\n\nTienes {coins} monedas.\n\nItems disponibles:")
+
+    for i in range(3):
+        guardada = " - Guardada" if i == savedShopSlot else ""
+
+        if shopSlots[i] == 1:
+            print(f"\n{i+1}. Espada normal - 150 monedas{guardada}")
+        elif shopSlots[i] == 2:
+            print(f"\n{i+1}. Armadura ligera - 150 monedas{guardada}")
+        elif shopSlots[i] == 3:
+            print(f"\n{i+1}. Botas de velocidad - 400 monedas{guardada}")
+        elif shopSlots[i] == 4:
+            print(f"\n{i+1}. Espada del heroe - 2000 monedas{guardada}")
+        elif shopSlots[i] == 5:
+            print(f"\n{i+1}. Armadura del heroe - 2000 monedas{guardada}")
+
+    if savedShopSlot != -1:
+        savedName = "" 
+        if savedShopItem == 1:
+            savedName = "Espada normal"
+        elif savedShopItem == 2:
+            savedName = "Armadura ligera"
+        elif savedShopItem == 3:
+            savedName = "Botas de velocidad"
+        elif savedShopItem == 4:
+            savedName = "Espada del heroe"
+        elif savedShopItem == 5:
+            savedName = "Armadura del heroe"
+
+        print(f"\n\nItem guardado: ranura {savedShopSlot+1} - {savedName}")
+
+    print("\n\nOpciones:")
+    print(" 1-3: Comprar item")
+    print(" 4: Guardar item para que no cambie al subir de nivel")
+    print(" 5: Salir")
+
+    opcion = input("\n\nElige una opcion (1-5): ")
+    try:
+        opcion = int(opcion)
+    except ValueError:
+        opcion = 0
+
+    if opcion == 1:
+        if shopSlots[0] == 1 and coins >= 150 and not ItemsOwned[0]:
+            ItemsOwned[0] = True
+            coins -= 150
+            print("\n\nHas comprado la espada normal!")
+        elif shopSlots[0] == 2 and coins >= 150 and not ItemsOwned[1]:
+            ItemsOwned[1] = True
+            coins -= 150
+            print("\n\nHas comprado la armadura ligera!")
+        elif shopSlots[0] == 3 and coins >= 400 and not ItemsOwned[2]:
+            ItemsOwned[2] = True
+            coins -= 400
+            print("\n\nHas comprado las botas de velocidad!")
+        elif shopSlots[0] == 4 and coins >= 2000 and not ItemsOwned[3]:
+            ItemsOwned[3] = True
+            coins -= 2000
+            print("\n\nHas comprado la espada del heroe!")
+        elif shopSlots[0] == 5 and coins >= 2000 and not ItemsOwned[4]:
+            ItemsOwned[4] = True
+            coins -= 2000
+            print("\n\nHas comprado la armadura del heroe!")
+        else:
+            print("\n\nNo tienes suficientes monedas para comprar ese item o respuesta invalida.")
+    elif opcion == 2:
+        if shopSlots[1] == 1 and coins >= 150 and not ItemsOwned[0]:
+            ItemsOwned[0] = True
+            coins -= 150
+            print("\n\nHas comprado la espada normal!")
+        elif shopSlots[1] == 2 and coins >= 150 and not ItemsOwned[1]:
+            ItemsOwned[1] = True
+            coins -= 150
+            print("\n\nHas comprado la armadura ligera!")
+        elif shopSlots[1] == 3 and coins >= 400 and not ItemsOwned[2]:
+            ItemsOwned[2] = True
+            coins -= 400
+            print("\n\nHas comprado las botas de velocidad!")
+        elif shopSlots[1] == 4 and coins >= 2000 and not ItemsOwned[3]:
+            ItemsOwned[3] = True
+            coins -= 2000
+            print("\n\nHas comprado la espada del heroe!")
+        elif shopSlots[1] == 5 and coins >= 2000 and not ItemsOwned[4]:
+            ItemsOwned[4] = True
+            coins -= 2000
+            print("\n\nHas comprado la armadura del heroe!")
+        else:
+            print("\n\nNo tienes suficientes monedas para comprar ese item o respuesta invalida.")
+    elif opcion == 3:
+        if shopSlots[2] == 1 and coins >= 150 and not ItemsOwned[0]:
+            ItemsOwned[0] = True
+            coins -= 150
+            print("\n\nHas comprado la espada normal!")
+        elif shopSlots[2] == 2 and coins >= 150 and not ItemsOwned[1]:
+            ItemsOwned[1] = True
+            coins -= 150
+            print("\n\nHas comprado la armadura ligera!")
+        elif shopSlots[2] == 3 and coins >= 400 and not ItemsOwned[2]:
+            ItemsOwned[2] = True
+            coins -= 400
+            print("\n\nHas comprado las botas de velocidad!")
+        elif shopSlots[2] == 4 and coins >= 2000 and not ItemsOwned[3]:
+            ItemsOwned[3] = True
+            coins -= 2000
+            print("\n\nHas comprado la espada del heroe!")
+        elif shopSlots[2] == 5 and coins >= 2000 and not ItemsOwned[4]:
+            ItemsOwned[4] = True
+            coins -= 2000
+            print("\n\nHas comprado la armadura del heroe!")
+        else:
+            print("\n\nNo tienes suficientes monedas para comprar ese item o respuesta invalida.")
+    elif opcion == 4:
+        slot = input("\n\nQue ranura quieres guardar? (1-3): ")
+        try:
+            slot = int(slot)
+        except ValueError:
+            slot = 0
+
+        if slot in (1, 2, 3) and shopSlots[slot-1] != 0:
+            savedShopSlot = slot-1
+            savedShopItem = shopSlots[slot-1]
+            print("\n\nItem guardado! No se cambiara esa ranura al subir de nivel.")
+        else:
+            print("\n\nRespuesta invalida o ranura vacia. No se guardo nada.")
+    elif opcion == 5:
+        mainMenu()
+        return
+    else:
+        print("\n\nRespuesta invalida.")
+    
+    mainMenu()
+    return
 
 
 
