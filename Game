@@ -21,7 +21,9 @@ equipedWeapon = 0
 shopSlots = [0]*3
 savedShopSlot = -1
 savedShopItem = 0    
-statuses = [False]*3    # Stun, bleed and confusion, in that order.
+statuses = [0]*3    # Stun, bleed and confusion, in that order.
+defeatStreak = 0
+winStreak = 0
 
 def startUp():
     global name
@@ -41,7 +43,7 @@ def startUp():
             Yn = input(f"\n\nConfirmar el nombre {name}? No lo podras cambiar despues (Y/N): ")
 
 
-    elif Yn.upper() != 'Y':
+    elif Yn != 'Y':
         while Yn != 'N' and Yn.upper() != 'Y':
             Yn = input("\n\nError, respuesta no valida. Ingresa de nuevo: ")
 
@@ -90,7 +92,7 @@ def mainMenu():
 
 
 def fights():
-    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, equipedArmor, equipedWeapon, shopSlots, savedShopSlot, perception
+    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, equipedArmor, equipedWeapon, shopSlots, savedShopSlot, perception, statuses, winStreak, defeatStreak
 
     dodgeChance = 0
 
@@ -105,11 +107,11 @@ def fights():
 
     armor = 0
 
-    enemyHp = playerHp*1.5
+    enemyHp = playerHp*1.5+winStreak*10-defeatStreak*5 + random.randint(-10, 10)
 
     maxEnemyHp = enemyHp
 
-    enemyStrengh = strength*10
+    enemyStrengh = strength*5+10+winStreak*4-defeatStreak*2 + random.randint(-10, 5)
 
     if defense*2 > enemyStrengh-15:
         armor = enemyStrengh-15
@@ -119,7 +121,7 @@ def fights():
 
     enemySpeed = random.randint(speed-20, speed+5)
 
-    damage = 20*strength
+    damage = 5*strength+15
 
     win = False
 
@@ -161,6 +163,32 @@ def fights():
 
 
         print(f"\n\nHP del enemigo: {enemyHp}\n\nHP de {name}: {playerHp}")
+
+        if statuses[1] > 0:
+            bleedDamage = int(enemyHp*0.05)
+            enemyHp -= bleedDamage
+            print(f"\n\nEl enemigo sufre de sangrado! Pierde {bleedDamage} HP. Le quedan {statuses[1]} turnos de sangrado.")
+            if enemyHp <= 0:
+                win = True
+                break
+            statuses[1] -= 1
+        if statuses[2] > 0:
+            if random.randint(1,100) <= 50:
+                enemyHp -= enemyStrengh
+                print(f"\n\nEl enemigo esta confundido! Se ataca a si mismo por {enemyStrengh} de daño. Le quedan {statuses[2]} turnos de confusión.")
+                if enemyHp <= 0:
+                    win = True
+                    break
+                statuses[2] -= 1
+                continue
+            else:
+                print("\n\nEl enemigo esta confundido, pero logra atacar de todas formas!")
+                statuses[2] -= 1
+        if statuses[0] > 0:
+            print(f"\n\nEl enemigo esta aturdido! Pierde su turno. Le quedan {statuses[0]} turnos de aturdimiento.")
+            statuses[0] -= 1
+            continue
+
         
         if speed > enemySpeed:
 
@@ -173,12 +201,14 @@ def fights():
                 if random.randint(1, 100) <= enemyDodge:
                     print("\n\nEl enemigo esquivo tu ataque!")
                 else:
-                    # Critical hit check using perception (chance out of 100)
                     crit = random.randint(1, 100) <= perception
                     if Eblocking:
                         final_damage = (damage * (2 if crit else 1)) / 2
                         if crit:
                             print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño (critico).")
+                            if random.randint(1, 5) == 1:
+                                statuses[random.randint(0,2)] += 3
+                                print(f"\n\nEl enemigo es afectado por un efecto negativo!")
                         else:
                             print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño.")
                         enemyHp -= final_damage
@@ -186,6 +216,9 @@ def fights():
                         final_damage = damage * (2 if crit else 1)
                         if crit:
                             print(f"\n\nGolpeas al enemigo! Critico — haces {final_damage} de daño.")
+                            if random.randint(1, 5) == 1:
+                                statuses[random.randint(0,2)] += 3
+                                print(f"\n\nEl enemigo es afectado por un efecto negativo!")
                         else:
                             print(f"\n\nGolpeas al enemigo! Haces {final_damage} de daño.")
                         enemyHp -= final_damage
@@ -217,7 +250,7 @@ def fights():
 
                 break
 
-            elif enemyHp < maxEnemyHp/2 and not Eblocked:
+            elif enemyHp < maxEnemyHp/2 and not Eblocked and enemyHp > damage/2:
 
                 Eblocked = True
 
@@ -271,12 +304,14 @@ def fights():
                 if random.randint(1, 100) <= enemyDodge:
                     print("\n\nEl enemigo esquivo tu ataque!")
                 else:
-                    # Critical hit check using perception (chance out of 100)
                     crit = random.randint(1, 100) <= perception
                     if Eblocking:
                         final_damage = (damage * (2 if crit else 1)) / 2
                         if crit:
                             print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño (critico).")
+                            if random.randint(1, 5) == 1:
+                                statuses[random.randint(0,2)] += 3
+                                print(f"\n\nEl enemigo es afectado por un efecto negativo!")
                         else:
                             print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño.")
                         enemyHp -= final_damage
@@ -284,6 +319,9 @@ def fights():
                         final_damage = damage * (2 if crit else 1)
                         if crit:
                             print(f"\n\nGolpeas al enemigo! Critico — haces {final_damage} de daño.")
+                            if random.randint(1, 5) == 1:
+                                statuses[random.randint(0,2)] += 3
+                                print(f"\n\nEl enemigo es afectado por un efecto negativo!")
                         else:
                             print(f"\n\nGolpeas al enemigo! Haces {final_damage} de daño.")
                         enemyHp -= final_damage
@@ -315,12 +353,13 @@ def fights():
         print("\n\n------------------------------------------------------")
 
     if win:
-        print(f"\n\nFelicidades! Has ganado la pelea! Has ganado {50+maxEnemyHp} de XP y {20+enemyStrengh} monedas!")
+        print(f"\n\nFelicidades! Has ganado la pelea! Has ganado {50+maxEnemyHp+winStreak*5} de XP y {20+enemyStrengh+winStreak*5} monedas!")
+        winStreak += 1
+        defeatStreak = 0
         xp += 50+maxEnemyHp/2
         coins += 20+enemyStrengh
         if xp >= xpToNextLevel:
             
-            # Si el jugador guardó una ranura, no la sobreescribimos al subir de nivel.
             if savedShopSlot != 0:
                 if randomizador <= 60:
                     shopSlots[0] = random.randint(1, 2)
@@ -348,13 +387,15 @@ def fights():
                     shopSlots[2] = random.randint(4, 5)
             while xp >= xpToNextLevel:
                 level += 1
-                statPoints += 3
+                statPoints += 5
                 xp -= xpToNextLevel
                 xpToNextLevel = int(xpToNextLevel*1.35)
                 print(f"\n\nHas subido de nivel! Ahora eres nivel {level}! Tienes {statPoints} puntos de estadistica para gastar!")
             if level >= 5:
                 print("\nHan cambiado los items en la tienda! Revisa la tienda para ver los nuevos items disponibles!")
     else:
+        winStreak = 0
+        defeatStreak += 1
         print("\n\nHas sido derrotado... Mejor suerte la proxima vez!")
     
     mainMenu()
