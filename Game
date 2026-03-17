@@ -1,4 +1,11 @@
 import random
+import os
+import platform
+
+def clear_console():
+    os.system('cls' if platform.system() == 'Windows' else 'clear')
+
+clear_console()
 
 
 name = ""
@@ -28,6 +35,7 @@ winStreak = 0
 def startUp():
     global name
 
+    clear_console()
 
     print("Bienvenido a RPG.")
 
@@ -59,6 +67,7 @@ def startUp():
 
 def mainMenu():
 
+    clear_console()
 
     print("\n------------------------------------------------------\n\nJuego RPG\n\n 1. Pelea\n 2. Estadisticas\n 3. Inventario\n 4. Tienda")
 
@@ -94,6 +103,8 @@ def mainMenu():
 def fights():
     global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, equipedArmor, equipedWeapon, shopSlots, savedShopSlot, perception, statuses, winStreak, defeatStreak
 
+    clear_console()
+
     dodgeChance = 0
 
     if speed > 50:
@@ -107,11 +118,11 @@ def fights():
 
     armor = 0
 
-    enemyHp = playerHp*1.5+winStreak*10-defeatStreak*5 + random.randint(-10, 10)
+    enemyHp = playerHp*1.5+winStreak*25-defeatStreak*10 + random.randint(-10, 10)
 
     maxEnemyHp = enemyHp
 
-    enemyStrengh = strength*5+10+winStreak*4-defeatStreak*2 + random.randint(-10, 5)
+    enemyStrengh = strength*5+10+winStreak*10-defeatStreak*5 + random.randint(-10, 5)
 
     if defense*2 > enemyStrengh-15:
         armor = enemyStrengh-15
@@ -161,7 +172,7 @@ def fights():
 
     while True:
 
-
+        clear_console()
         print(f"\n\nHP del enemigo: {enemyHp}\n\nHP de {name}: {playerHp}")
 
         if statuses[1] > 0:
@@ -180,6 +191,7 @@ def fights():
                     win = True
                     break
                 statuses[2] -= 1
+                input("\n\nPresiona Enter para continuar...")
                 continue
             else:
                 print("\n\nEl enemigo esta confundido, pero logra atacar de todas formas!")
@@ -187,6 +199,7 @@ def fights():
         if statuses[0] > 0:
             print(f"\n\nEl enemigo esta aturdido! Pierde su turno. Le quedan {statuses[0]} turnos de aturdimiento.")
             statuses[0] -= 1
+            input("\n\nPresiona Enter para continuar...")
             continue
 
         
@@ -351,8 +364,12 @@ def fights():
         Eblocking = False
 
         print("\n\n------------------------------------------------------")
+        input("\n\nPresiona Enter para continuar...")
 
     if win:
+        print("\n\n------------------------------------------------------")
+        input("\n\nPresiona Enter para continuar...")
+        clear_console()
         print(f"\n\nFelicidades! Has ganado la pelea! Has ganado {50+maxEnemyHp+winStreak*5} de XP y {20+enemyStrengh+winStreak*5} monedas!")
         winStreak += 1
         defeatStreak = 0
@@ -397,7 +414,18 @@ def fights():
         winStreak = 0
         defeatStreak += 1
         print("\n\nHas sido derrotado... Mejor suerte la proxima vez!")
+        if coins >= 10+enemyHp/2:
+            coins -= 10+enemyHp/2
+            print(f"\n\nHas perdido {10+enemyHp/2} monedas.")
+            if random.randint(1,100) <= 10:
+                if statPoints >= 2:
+                    statPoints -= 2
+                    print("\n\nHas perdido 2 puntos de estadistica.")
+                elif statPoints > 0:
+                    statPoints = 0
+                    print("\n\nHas perdido todos tus puntos de estadistica.")
     
+    input("\n\nPresiona Enter para continuar...")
     mainMenu()
     return
 
@@ -405,6 +433,8 @@ def fights():
             
 def stats ():
     global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, perception
+
+    clear_console()
 
     print("\n\n------------------------------------------------------")
 
@@ -457,6 +487,8 @@ def stats ():
 
 def inventory():
     global ItemsOwned, equipedArmor, equipedWeapon
+
+    clear_console()
 
     print("\n------------------------------------------------------\n\nInventario\n")
 
@@ -534,10 +566,13 @@ def inventory():
 def store():
     global coins, ItemsOwned, shopSlots, level, savedShopSlot, savedShopItem
 
+    clear_console()
+
     print("\n------------------------------------------------------\n\nTienda\n")
 
     if level < 5:
         print("\n\nSube a nivel 5 para usar la tienda!")
+        input("\n\nPresiona Enter para continuar...")
         mainMenu()
         return
 
