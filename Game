@@ -9,6 +9,7 @@ strength = 1
 speed = 1
 defense = 1
 vitality = 1
+perception = 1
 level = 1
 statPoints = 0
 xp = 0
@@ -18,8 +19,9 @@ ItemsOwned = [False]*5
 equipedArmor = 0       
 equipedWeapon = 0      
 shopSlots = [0]*3
-savedShopSlot = -1   # ranura de tienda "guardada" que no se cambia al subir de nivel
-savedShopItem = 0    # ID del item guardado
+savedShopSlot = -1
+savedShopItem = 0    
+statuses = [False]*3    # Stun, bleed and confusion, in that order.
 
 def startUp():
     global name
@@ -88,7 +90,7 @@ def mainMenu():
 
 
 def fights():
-    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, equipedArmor, equipedWeapon, shopSlots, savedShopSlot
+    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, equipedArmor, equipedWeapon, shopSlots, savedShopSlot, perception
 
     dodgeChance = 0
 
@@ -171,12 +173,22 @@ def fights():
                 if random.randint(1, 100) <= enemyDodge:
                     print("\n\nEl enemigo esquivo tu ataque!")
                 else:
+                    # Critical hit check using perception (chance out of 100)
+                    crit = random.randint(1, 100) <= perception
                     if Eblocking:
-                        print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {damage/2} de daño.")
-                        enemyHp -= damage/2
+                        final_damage = (damage * (2 if crit else 1)) / 2
+                        if crit:
+                            print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño (critico).")
+                        else:
+                            print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño.")
+                        enemyHp -= final_damage
                     else:
-                        print(f"\n\nGolpeas al enemigo! Haces {damage} de daño.")
-                        enemyHp -= damage
+                        final_damage = damage * (2 if crit else 1)
+                        if crit:
+                            print(f"\n\nGolpeas al enemigo! Critico — haces {final_damage} de daño.")
+                        else:
+                            print(f"\n\nGolpeas al enemigo! Haces {final_damage} de daño.")
+                        enemyHp -= final_damage
 
 
             elif action == '2':
@@ -259,12 +271,22 @@ def fights():
                 if random.randint(1, 100) <= enemyDodge:
                     print("\n\nEl enemigo esquivo tu ataque!")
                 else:
+                    # Critical hit check using perception (chance out of 100)
+                    crit = random.randint(1, 100) <= perception
                     if Eblocking:
-                        print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {damage/2} de daño.")
-                        enemyHp -= damage/2
+                        final_damage = (damage * (2 if crit else 1)) / 2
+                        if crit:
+                            print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño (critico).")
+                        else:
+                            print(f"\n\nEl enemigo bloquea tu ataque! Haces solo {final_damage} de daño.")
+                        enemyHp -= final_damage
                     else:
-                        print(f"\n\nGolpeas al enemigo! Haces {damage} de daño.")
-                        enemyHp -= damage
+                        final_damage = damage * (2 if crit else 1)
+                        if crit:
+                            print(f"\n\nGolpeas al enemigo! Critico — haces {final_damage} de daño.")
+                        else:
+                            print(f"\n\nGolpeas al enemigo! Haces {final_damage} de daño.")
+                        enemyHp -= final_damage
 
 
             elif action == '2':
@@ -341,11 +363,11 @@ def fights():
 
             
 def stats ():
-    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints
+    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, perception
 
     print("\n\n------------------------------------------------------")
 
-    print(f"\n\n{name}'s Stats\n\nNivel: {level}\nXP: {xp}/{xpToNextLevel}\nMonedas: {coins}\nVitalidad: {vitality}\nFuerza: {strength}\nVelocidad: {speed}\nDefensa: {defense}\nPuntos de estadistica sin gastar: {statPoints}")
+    print(f"\n\n{name}'s Stats\n\nNivel: {level}\nXP: {xp}/{xpToNextLevel}\nMonedas: {coins}\nVitalidad: {vitality}\nFuerza: {strength}\nVelocidad: {speed}\nDefensa: {defense}\nPercepcion: {perception}\nPuntos de estadistica sin gastar: {statPoints}")
 
     Yn = input("\n\nQuieres gastar tus puntos de estadistica? (Y/N): ").upper()
 
@@ -354,7 +376,7 @@ def stats ():
 
     if Yn == 'Y' and statPoints > 0:
         while statPoints > 0:
-            statChose = input("\n\nQue estadistica quieres mejorar? (1. Vitalidad, 2. Fuerza, 3. Velocidad, 4. Defensa): ")
+            statChose = input("\n\nQue estadistica quieres mejorar? (1. Vitalidad, 2. Fuerza, 3. Velocidad, 4. Defensa, 5. Percepcion): ")
             try:
                 statAmount = int(input("\n\nCuantos puntos quieres gastar? "))
             except ValueError:
@@ -374,6 +396,9 @@ def stats ():
                     statPoints -= statAmount
                 elif statChose == '4':
                     defense += statAmount
+                    statPoints -= statAmount
+                elif statChose == '5':
+                    perception += statAmount
                     statPoints -= statAmount
                 else:
                     print("\n\nError. No se ha gastado ningun punto de estadistica.")
