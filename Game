@@ -177,9 +177,12 @@ def fights():
 
     while True:
 
+        
+
         enemy_skip_turn = False
 
         clear_console()
+        print("\n\n------------------------------------------------------")
         print(f"\n\nHP del enemigo: {enemyHp}\n\nHP de {name}: {playerHp}")
 
         lifesteal_active = False
@@ -400,7 +403,6 @@ def fights():
         blocking = False
         Eblocking = False
 
-        print("\n\n------------------------------------------------------")
         input("\n\nPresiona Enter para continuar...")
 
     if win:
