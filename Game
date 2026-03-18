@@ -12,6 +12,8 @@ name = ""
 
 
 # Stats
+prestigeLevelNeeded = 10
+prestige = 0
 strength = 1
 speed = 5
 defense = 1
@@ -19,6 +21,7 @@ vitality = 1
 perception = 5
 level = 1
 statPoints = 0
+statPointsGain = 5
 xp = 0
 coins = 0
 xpToNextLevel = 100
@@ -67,10 +70,16 @@ def startUp():
 
 def mainMenu():
 
+    global prestige, level
+
     clear_console()
 
     print("\n------------------------------------------------------\n\nJuego RPG\n\n 1. Pelea\n 2. Estadisticas\n 3. Inventario\n 4. Tienda")
 
+    if level >= 10 and prestige == 0:
+        print("\n 5. ???")
+    elif prestige > 0:
+        print("\n 5. Renacer")
 
     
     while True:
@@ -90,6 +99,8 @@ def mainMenu():
         elif opcion == '4':
             store()
             break
+        elif (level >= 10 or prestige > 0) and opcion == '5':
+            prestige()
         else:
             print("\n\nError. Intenta de nuevo.")
             
@@ -101,7 +112,7 @@ def mainMenu():
 
 
 def fights():
-    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, equipedArmor, equipedWeapon, shopSlots, savedShopSlot, perception, statuses, winStreak, defeatStreak
+    global vitality, strength, speed, defense, name, xp, coins, xpToNextLevel, level, statPoints, equipedArmor, equipedWeapon, shopSlots, savedShopSlot, perception, statuses, winStreak, defeatStreak, statPointsGain
 
     clear_console()
 
@@ -409,11 +420,11 @@ def fights():
         print("\n\n------------------------------------------------------")
         input("\n\nPresiona Enter para continuar...")
         clear_console()
-        print(f"\n\nFelicidades! Has ganado la pelea! Has ganado {50+maxEnemyHp+winStreak*5} de XP y {20+enemyStrengh+winStreak*5} monedas!")
+        print(f"\n\nFelicidades! Has ganado la pelea! Has ganado {(50+maxEnemyHp/2+winStreak*5)*(1+0.1*prestige)} de XP y {(20+enemyStrengh+winStreak*5)*(1+0.1*prestige)} monedas!")
         winStreak += 1
         defeatStreak = 0
-        xp += 50+maxEnemyHp/2
-        coins += 20+enemyStrengh
+        xp += (50+maxEnemyHp/2+winStreak*15)*(1+0.1*prestige)
+        coins += (20+enemyStrengh+winStreak*15)*(1+0.1*prestige)
         if xp >= xpToNextLevel:
             
             if savedShopSlot != 0:
@@ -443,7 +454,7 @@ def fights():
                     shopSlots[2] = random.randint(4, 5)
             while xp >= xpToNextLevel:
                 level += 1
-                statPoints += 5
+                statPoints += statPointsGain
                 xp -= xpToNextLevel
                 xpToNextLevel = int(xpToNextLevel*1.35)
                 print(f"\n\nHas subido de nivel! Ahora eres nivel {level}! Tienes {statPoints} puntos de estadistica para gastar!")
@@ -808,7 +819,38 @@ def store():
     return
 
 
+    def rebirth():
+        global level, coins, strength, speed, defense, vitality, perception, coins, xp, xpToNextLevel, ItemsOwned, equipedArmor, equipedWeapon, winStreak, defeatStreak, prestige, prestigeLevelNeeded
+        print("\n------------------------------------------------------")
+        if level >= prestigeLevelNeeded  and coins >= 1000:
+            Yn = input("\n\nQuieres renacer para volverte mas poderoso? Se reiniciara todo tu progreso a cambio de multiplicadores y incremento a tus stats (Y/N): ").upper()
 
+            if Yn == 'Y':
+                prestige += 1
+                level = 1
+                coins = 0
+                strength = 1+prestige*5
+                speed = 5+prestige*5
+                defense = 1+prestige*5
+                perception = 5+prestige*5
+                vitality = 1+prestige*5
+                xp = 0
+                xpToNextLevel = 100
+                ItemsOwned = [0 for _ in ItemsOwned]
+                equipedArmor = 0
+                equipedWeapon = 0
+                winStreak = 0
+                defeatStreak = 0
+                prestigeLevelNeeded += 1
+                statPointsGain += 1
+                print("\n\nHas renacido con exito.")
+        elif level < prestigeLevelNeeded:
+            print("\n\nNo eres lo suficientemente poderoso.")
+        else:
+            print("\n\nNo tienes las suficientes monedas")
 
+    input("\n\nPresiona Enter para continuar...")
+    mainMenu()
+    return
 
 startUp()
