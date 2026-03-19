@@ -14,6 +14,8 @@ name = ""
 # Stats
 prestigeLevelNeeded = 10
 prestige = 0
+amuletRoll = 1 #I've yet to implement it, but layed the groundwork for it.
+amuletRarity = 1
 strength = 1
 speed = 5
 defense = 1
@@ -24,6 +26,7 @@ statPoints = 0
 statPointsGain = 5
 xp = 0
 coins = 10
+soulCoins = 0
 xpToNextLevel = 100
 ItemsOwned = [False]*5 
 equipedArmor = 0       
@@ -630,7 +633,7 @@ def inventory():
     return
 
 def store():
-    global coins, ItemsOwned, shopSlots, level, savedShopSlot, savedShopItem
+    global coins, ItemsOwned, shopSlots, level, savedShopSlot, savedShopItem, soulCoins
 
     clear_console()
 
@@ -672,6 +675,11 @@ def store():
             savedName = "Armadura del heroe"
 
         print(f"\n\nItem guardado: ranura {savedShopSlot+1} - {savedName}")
+
+    if prestige > 1:
+        print(f"\n\nTienes {soulCoins} monedas de alma.")
+
+
 
     print("\n\nOpciones:")
     print(" 1-3: Comprar item")
@@ -822,12 +830,15 @@ def store():
 
 
 def rebirth():
-    global statPoints, level, coins, strength, speed, defense, vitality, perception, coins, xp, xpToNextLevel, ItemsOwned, equipedArmor, equipedWeapon, winStreak, defeatStreak, prestige, prestigeLevelNeeded, statPointsGain
+    global statPoints, level, coins, strength, speed, defense, vitality, perception, coins, xp, xpToNextLevel, ItemsOwned, equipedArmor, equipedWeapon, winStreak, defeatStreak, prestige, prestigeLevelNeeded, statPointsGain, soulCoins, amuletRoll, amuletRarity
     print("\n------------------------------------------------------")
     if level >= prestigeLevelNeeded  and coins >= 1000:
         Yn = input("\n\nQuieres renacer para volverte mas poderoso? Se reiniciara todo tu progreso a cambio de multiplicadores y incremento a tus stats (Y/N): ").upper()
 
         if Yn == 'Y':
+            rarityRoll = random.randint(1,100)
+            amuletRoll = random.randint(1,7)
+            soulCoins += 10+prestige
             prestige += 1
             statPoints = 0
             level = 1
@@ -846,7 +857,14 @@ def rebirth():
             defeatStreak = 0
             prestigeLevelNeeded += 1
             statPointsGain += 1
+            if rarityRoll <= 60:
+                amuletRarity = 1
+            elif rarityRoll <= 94:
+                amuletRarity = 2
+            else: 
+                amuletRarity = 3
             print("\n\nHas renacido con exito.")
+            print(f"\nHas conseguido {10+prestige-1} monedas de alma.")
     elif level < prestigeLevelNeeded:
         print("\n\nNo eres lo suficientemente poderoso.")
     else:
